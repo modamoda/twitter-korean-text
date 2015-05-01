@@ -41,7 +41,7 @@ object TwitterKoreanProcessor {
    * Wrapper for Korean stemmer
    *
    * @param text Input text
-   * @return A sequence of stemmed tokens
+   * @return A sequence of stemmed text
    */
   def stem(text: CharSequence): CharSequence = KoreanStemmer.stem(text)
 
@@ -65,6 +65,7 @@ object TwitterKoreanProcessor {
    * @param text input text
    * @param normalizization option to enable the normalizer
    * @param stemming option to enable the stemmer
+   * @param keepSpace option to keep space
    * @return A sequence of KoreanTokens.
    */
   def tokenize(text: CharSequence,
@@ -80,7 +81,8 @@ object TwitterKoreanProcessor {
    * Extract noun-phrases from Korean text
    *
    * @param text input text.
-   * @param filterSpam Whether to filter spam/slang terms
+   * @param filterSpam whether to filter spam/slang terms
+   * @param enableHashtags whether to enable hash tags
    * @return A sequence of extracted phrases
    */
   def extractPhrases(text: CharSequence,

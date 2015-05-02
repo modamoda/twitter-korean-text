@@ -67,7 +67,7 @@ public class TwitterKoreanProcessorJava {
    * Stem Korean Verbs and Adjectives
    *
    * @param text Input text.
-   * @return StemmedTextWithTokens(text, tokens)
+   * @return Stemmed text
    */
   public CharSequence stem(CharSequence text) {
     return TwitterKoreanProcessor.stem(text);

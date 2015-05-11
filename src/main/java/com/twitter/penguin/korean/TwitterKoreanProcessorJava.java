@@ -28,29 +28,12 @@ import com.google.common.collect.Lists;
 
 import com.twitter.penguin.korean.phrase_extractor.KoreanPhraseExtractor;
 import com.twitter.penguin.korean.tokenizer.KoreanTokenizer.KoreanToken;
+import com.twitter.penguin.korean.util.KoreanPos;
 
 /**
  * Java wrapper for TwitterKoreanProcessor using Builder pattern
  */
-public class TwitterKoreanProcessorJava {
-  private boolean stemmerEnabled;
-  private boolean normalizerEnabled;
-  private boolean keepSpaceEnabled;
-  private boolean phraseExtractorSpamFilterEnabled;
-  private boolean phraseExtractorHashtagsEnabled;
-
-
-  private TwitterKoreanProcessorJava(
-      boolean normalizerEnabled, boolean stemmerEnabled,
-      boolean keepSpaceEnabled, boolean phraseExtractorSpamFilterEnabled,
-      boolean phraseExtractorHashtagsEnabled) {
-    // Use the builder to instantiate this
-    this.stemmerEnabled = stemmerEnabled;
-    this.normalizerEnabled = normalizerEnabled;
-    this.keepSpaceEnabled = keepSpaceEnabled;
-    this.phraseExtractorSpamFilterEnabled = phraseExtractorSpamFilterEnabled;
-    this.phraseExtractorHashtagsEnabled = phraseExtractorHashtagsEnabled;
-  }
+public final class TwitterKoreanProcessorJava {
 
   /**
    * Normalize Korean text
@@ -59,113 +42,100 @@ public class TwitterKoreanProcessorJava {
    * @param text Input text.
    * @return Normalized text.
    */
-  public CharSequence normalize(CharSequence text) {
+  public static CharSequence normalize(CharSequence text) {
     return TwitterKoreanProcessor.normalize(text);
-  }
-
-  /**
-   * Stem Korean Verbs and Adjectives
-   *
-   * @param text Input text.
-   * @return Stemmed text
-   */
-  public CharSequence stem(CharSequence text) {
-    return TwitterKoreanProcessor.stem(text);
   }
 
   /**
    * Tokenize with the builder options.
    *
    * @param text Input text.
-   * @return A list of Korean Tokens
+   * @return A list of Korean Tokens (run tokensToJavaList to transform to Java List)
    */
-  public List<KoreanTokenJava> tokenize(CharSequence text) {
-    Iterator<KoreanToken> tokenized = TwitterKoreanProcessor.tokenize(
-        text, normalizerEnabled, stemmerEnabled, keepSpaceEnabled
-    ).iterator();
+  public static Seq<KoreanToken> tokenize(CharSequence text) {
+    return TwitterKoreanProcessor.tokenize(
+        text
+    );
+  }
 
+
+
+  /**
+   * Transforms the tokenization output to List<KoreanTokenJava>
+   *
+   * @param tokens Korean tokens (output of tokenize(CharSequence text)).
+   * @return List of KoreanTokenJava.
+   */
+  public static List<KoreanTokenJava> tokensToJavaKoreanTokenList(Seq<KoreanToken> tokens, boolean keepSpace) {
+    Iterator<KoreanToken> tokenized = tokens.iterator();
     List<KoreanTokenJava> output = Lists.newLinkedList();
     while (tokenized.hasNext()) {
       KoreanToken token = tokenized.next();
-      output.add(new KoreanTokenJava(
-          token.text(),
-          KoreanPosJava.valueOf(token.pos().toString()),
-          token.offset(),
-          token.length(),
-          token.unknown()
-      ));
-
+      if (keepSpace || token.pos() != KoreanPos.Space()) {
+        output.add(new KoreanTokenJava(
+            token.text(),
+            KoreanPosJava.valueOf(token.pos().toString()),
+            token.offset(),
+            token.length(),
+            token.unknown()
+        ));
+      }
     }
     return output;
   }
 
+  // Default behavior of keepSpace is false
+  public static List<KoreanTokenJava> tokensToJavaKoreanTokenList(Seq<KoreanToken> tokens) {
+    return tokensToJavaKoreanTokenList(tokens, false);
+  }
+
+
   /**
    * Tokenize with the builder options into a String Iterable.
    *
-   * @param text Input text.
-   * @return A list of token strings.
+   * @param tokens Korean tokens (output of tokenize(CharSequence text)).
+   * @return List of token strings.
    */
-  public List<String> tokenizeToStrings(CharSequence text) {
-    Seq<String> tokenized = TwitterKoreanProcessor.tokenizeToStrings(
-        text, normalizerEnabled, stemmerEnabled, keepSpaceEnabled
-    );
-    return JavaConversions.seqAsJavaList(tokenized);
+  public static List<String> tokensToJavaStringList(Seq<KoreanToken> tokens, boolean keepSpace) {
+    Iterator<KoreanToken> tokenized = tokens.iterator();
+    List<String> output = Lists.newLinkedList();
+    while (tokenized.hasNext()) {
+      final KoreanToken token = tokenized.next();
+
+      if (keepSpace || token.pos() != KoreanPos.Space()) {
+        output.add(token.text());
+      }
+    }
+    return output;
+  }
+
+  // Default behavior of keepSpace is false
+  public static List<String> tokensToJavaStringList(Seq<KoreanToken> tokens) {
+    return tokensToJavaStringList(tokens, false);
+  }
+
+
+  /**
+   * Stem Korean Verbs and Adjectives
+   *
+   * @param tokens Korean tokens (output of tokenize(CharSequence text)).
+   * @return StemmedTextWithTokens(text, tokens)
+   */
+  public static Seq<KoreanToken> stem(Seq<KoreanToken> tokens) {
+
+    return TwitterKoreanProcessor.stem(tokens);
   }
 
   /**
    * Extract phrases from Korean input text
    *
-   * @param text Input text.
+   * @param tokens Korean tokens (output of tokenize(CharSequence text)).
    * @return List of phrase CharSequences.
    */
-  public List<KoreanPhraseExtractor.KoreanPhrase> extractPhrases(CharSequence text) {
+  public static List<KoreanPhraseExtractor.KoreanPhrase> extractPhrases(Seq<KoreanToken> tokens, boolean filterSpam, boolean includeHashtags) {
     return JavaConversions.seqAsJavaList(
-        TwitterKoreanProcessor.extractPhrases(text, phraseExtractorSpamFilterEnabled, phraseExtractorHashtagsEnabled)
+        TwitterKoreanProcessor.extractPhrases(tokens, filterSpam, includeHashtags)
     );
   }
 
-  /**
-   * Builder for TwitterKoreanProcessorJava
-   */
-  public static final class Builder {
-    private boolean normalizerEnabled = true;
-    private boolean stemmerEnabled = true;
-    private boolean keepSpaceEnabled = false;
-
-    private boolean phraseExtractorSpamFilterEnabled = false;
-    private boolean phraseExtractorHashtagsEnabled = true;
-
-    public Builder disableNormalizer() {
-      normalizerEnabled = false;
-      return this;
-    }
-
-    public Builder disableStemmer() {
-      stemmerEnabled = false;
-      return this;
-    }
-
-    public Builder enableKeepSpace() {
-      keepSpaceEnabled = true;
-      return this;
-    }
-
-    public Builder enablePhraseExtractorSpamFilter() {
-      phraseExtractorSpamFilterEnabled = true;
-      return this;
-    }
-
-    public Builder disablePhraseExtractorHashtags() {
-      phraseExtractorHashtagsEnabled = false;
-      return this;
-    }
-
-
-    public TwitterKoreanProcessorJava build() {
-      return new TwitterKoreanProcessorJava(
-          normalizerEnabled, stemmerEnabled, keepSpaceEnabled,
-          phraseExtractorSpamFilterEnabled, phraseExtractorHashtagsEnabled
-      );
-    }
-  }
 }

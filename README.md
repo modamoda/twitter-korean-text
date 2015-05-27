@@ -58,6 +58,11 @@ The maven site is available here http://twitter.github.io/twitter-korean-text/ a
 
 Please visit [https://github.com/modamoda/TwitterKoreanProcessorCS](https://github.com/modamoda/TwitterKoreanProcessorCS) for further information!
 
+Also available on [Nuget](https://www.nuget.org/packages/Moda.Korean.TwitterKoreanProcessorCS/):
+
+    PM> Install-Package Moda.Korean.TwitterKoreanProcessorCS
+
+
 ### node.js Wrapper
 
 [Ch0p](https://github.com/Ch0p) Kindly offered an awesome node.js wrapper. Check it out here: [twtkrjs](https://github.com/Ch0p/twtkrjs)
@@ -227,3 +232,4 @@ From [http://konlpy.org/ko/v0.4.2/morph/](http://konlpy.org/ko/v0.4.2/morph/)
 Copyright 2014 Twitter, Inc.
 
 Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+
